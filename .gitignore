@@ -10,7 +10,7 @@ target/
 .classpath
 .project
 
-mydata/
+mydata/*
 
-!mydata/nginx/conf
+!mydata/nginx/
 !mydata/logstash/
