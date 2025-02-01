@@ -9,3 +9,8 @@ target/
 .settings/
 .classpath
 .project
+
+mydata/
+
+!mydata/nginx/conf
+!mydata/logstash/
