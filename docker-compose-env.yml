@@ -31,11 +31,14 @@ services:
     ports:
       - 80:80
   rabbitmq:
-    image: rabbitmq:3.9-management
+    image: rabbitmq:3.10-management
     container_name: rabbitmq-mall
+    environment:
+      - RABBITMQ_DEFAULT_USER=mall  # 替换为你的用户名
+      - RABBITMQ_DEFAULT_PASS=mall  # 替换为你的密码
     volumes:
-      - ./mydata/rabbitmq/data:/var/lib/rabbitmq #数据文件挂载
-      - ./mydata/rabbitmq/log:/var/log/rabbitmq #日志文件挂载
+      - ./mydata/rabbitmq/data:/var/lib/rabbitmq # 数据文件挂载
+      - ./mydata/rabbitmq/log:/var/log/rabbitmq # 日志文件挂载
     ports:
       - 5672:5672
       - 15672:15672
@@ -94,3 +97,4 @@ services:
       - "MODE=standalone"
     ports:
       - 8848:8848
+      - 9848:9848
