@@ -10,7 +10,12 @@ target/
 .classpath
 .project
 
+# 忽略 mydata 目录下的所有内容
 mydata/*
 
+# 但不忽略 mydata 目录本身（必须添加）
+!mydata/
+
+# 取消忽略特定子目录
 !mydata/nginx/
 !mydata/logstash/
