@@ -32,7 +32,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skipTests>true</skipTests>
-        <docker.host>http://192.168.3.101:2375</docker.host>
+        <docker.host>http://127.0.0.1:2375</docker.host>
         <docker.maven.plugin.version>0.43.3</docker.maven.plugin.version>
         <java.version>17</java.version>
         <spring-boot.version>3.2.2</spring-boot.version>
