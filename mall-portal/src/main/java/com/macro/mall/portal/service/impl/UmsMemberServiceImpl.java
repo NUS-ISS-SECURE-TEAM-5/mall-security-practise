@@ -26,6 +26,7 @@ import org.springframework.util.StringUtils;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 /**
  * 会员管理Service实现类
@@ -61,12 +62,29 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         return memberMapper.selectByPrimaryKey(id);
     }
 
+
+    /**
+     * 密码复杂度校验（强密码要求）
+     * @param password 用户输入的密码
+     * @return 是否符合安全要求
+     */
+    private boolean isValidPassword(String password) {
+        // 至少8位，包含大小写字母、数字、特殊字符
+        String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+        return Pattern.matches(passwordPattern, password);
+    }
+
     @Override
     public void register(String username, String password, String telephone, String authCode) {
         //验证验证码
         if(!verifyAuthCode(authCode,telephone)){
             Asserts.fail("验证码错误");
         }
+
+        if (!isValidPassword(password)) {
+            Asserts.fail("密码必须至少8位，包含大小写字母、数字和特殊字符");
+        }
+
         //查询是否已有该用户
         UmsMemberExample example = new UmsMemberExample();
         example.createCriteria().andUsernameEqualTo(username);
