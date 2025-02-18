@@ -23,16 +23,14 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-/**
- * 全局网关过滤器示例：只做 SQL 注入关键字检测
- */
+
 @Slf4j
 @Component
 public class SqlInjectionFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        log.debug("----SQL 注入防护过滤器生效----");
+
 
         ServerHttpRequest request = exchange.getRequest();
         HttpMethod method = request.getMethod();
