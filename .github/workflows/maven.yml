@@ -12,11 +12,21 @@ jobs:
     services:
       docker:
         image: docker:stable-dind
-        options: --privileged -p 2375:2375
+        options: --privileged
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Install socat
+        run: |
+          apt-get update
+          apt-get install -y socat
+
+      - name: Forward TCP 2375 to Docker's Unix socket
+        run: |
+          # 使用 socat 将 2375 端口转发到 Docker 本地 Unix socket
+          socat TCP-LISTEN:2375,fork UNIX-CONNECT:/var/run/docker.sock &
+        
       - name: Set up Docker Host
         run: |
           # 设置 Docker 主机环境变量为全局变量
