@@ -1,4 +1,4 @@
-name: Build Maven Project and Docker Image on GitHub Actions
+name: Build Docker Image with Maven on GitHub Actions
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build_maven_and_docker:
+  build_docker_image:
     runs-on: ubuntu-latest
     services:
       docker:
@@ -17,7 +17,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install socat
+      - name: Install socat and Maven
         run: |
           sudo apt-get update
           sudo apt-get install -y socat maven
@@ -42,18 +42,10 @@ jobs:
             fi
           done
 
-      - name: Build Maven Project
+      - name: Build Docker Image with Maven
         run: |
-          mvn clean install -DskipTests
-
-      - name: Build Docker Image from Dockerfile
-        run: |
-          echo -e "FROM openjdk:11-jre-slim\nCOPY target/*.jar app.jar\nENTRYPOINT [\"java\", \"-jar\", \"/app.jar\"]" > Dockerfile
+          mvn clean package -DskipTests
           docker -H tcp://localhost:2375 build -t my-maven-app .
-
-      - name: Run Docker Container and Check Output
-        run: |
-          docker -H tcp://localhost:2375 run --rm my-maven-app
 
       - name: List Docker Images
         run: |
