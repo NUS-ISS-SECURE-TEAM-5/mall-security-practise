@@ -1,35 +1,51 @@
-name: Ensure Docker 2375 is Open and Build
+name: Build and Push Docker Image on GitHub Actions
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+  push:
+    branches: 
+      - master
 
 jobs:
-  build:
+  build_container:
     runs-on: ubuntu-latest
     services:
       docker:
-        image: docker:20.10.24-dind
+        image: docker:dind
         options: --privileged
         ports:
           - 2375:2375
+    container:
+      image: ubuntu:latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Wait for Docker Daemon to be Ready
-      run: |
-        echo "Waiting for Docker to start..."
-        sleep 15  # 确保 Docker 完全启动
-        docker info  # 确保 Docker 运行正常
+      - name: Install Docker
+        run: |
+          apt-get update
+          apt-get install -y docker.io
 
-    - name: Check if 2375 is open
-      run: |
-        sudo netstat -tlnp | grep 2375 || echo "2375 is not open!"
+      - name: Test Connection
+        run: |
+          apt-get update
+          apt-get install -y iputils-ping
+          ping -c 3 docker
 
-    - name: Build with Maven
-      env:
-        DOCKER_HOST: "tcp://127.0.0.1:2375"
-      run: mvn -B package --file pom.xml
+      - name: Verify Docker
+        run: |
+          docker version
+          docker info
+
+      - name: Build Docker Image
+        run: |
+          echo -e "FROM ubuntu:latest\nRUN echo 'Hello from Docker!' > /hello.txt" > Dockerfile
+          docker build -t my-simple-image .
+
+      - name: Run Docker Container and Check Output
+        run: |
+          docker run --rm my-simple-image cat /hello.txt
+
+      - name: List Docker Images
+        run: |
+          docker images
