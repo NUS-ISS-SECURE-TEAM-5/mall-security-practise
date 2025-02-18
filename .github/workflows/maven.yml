@@ -19,8 +19,8 @@ jobs:
 
       - name: Set up Docker Host
         run: |
-          # 设置 Docker 主机环境变量
-          export DOCKER_HOST=tcp://localhost:2375
+          # 设置 Docker 主机环境变量为全局变量
+          echo "DOCKER_HOST=tcp://localhost:2375" >> $GITHUB_ENV
 
       - name: Wait for Docker to start
         run: |
