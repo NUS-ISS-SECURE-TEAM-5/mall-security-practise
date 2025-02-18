@@ -29,11 +29,11 @@ jobs:
     - name: Start Docker Daemon
       run: |
         sudo systemctl start docker
-        sudo dockerd --host=tcp://127.0.0.1:2375 --host=unix:///var/run/docker.sock &
-        sleep 5  # 等待 Docker Daemon 启动
-    
+        nohup sudo dockerd --host=tcp://127.0.0.1:2375 --host=unix:///var/run/docker.sock > dockerd.log 2>&1 &
+        sleep 10  # 确保 Docker Daemon 启动
+
     - name: Verify Docker Daemon
-      run: docker ps
+      run: docker info  # 确保 Docker 正常运行
     
     - name: Cache Maven dependencies
       uses: actions/cache@v4
@@ -44,6 +44,8 @@ jobs:
           maven-${{ runner.os }}-
 
     - name: Build with Maven
+      env:
+        DOCKER_HOST: "tcp://127.0.0.1:2375"  # 确保 docker-maven-plugin 连接正确
       run: mvn -B package --file pom.xml
     
     - name: Upload build artifacts
