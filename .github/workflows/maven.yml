@@ -1,9 +1,11 @@
 name: Build and Push Docker Image on GitHub Actions
+
 on:
   pull_request:
   push:
     branches: 
       - master
+
 jobs:
   build_container:
     runs-on: ubuntu-latest
@@ -13,8 +15,6 @@ jobs:
         options: --privileged
         ports:
           - 2375:2375
-    container:
-      image: ubuntu:latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
