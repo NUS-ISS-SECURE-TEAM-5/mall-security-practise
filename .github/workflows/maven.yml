@@ -11,39 +11,25 @@ jobs:
     runs-on: ubuntu-latest
     services:
       docker:
-        image: docker:dind
-        options: --privileged
-        ports:
-          - 2375:2375
+        image: docker:stable-dind
+        options: --privileged -p 2375:2375
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Docker
+      - name: Test Docker Connection
         run: |
-          apt-get update
-          apt-get install -y docker.io
-
-      - name: Test Connection
-        run: |
-          apt-get update
-          apt-get install -y iputils-ping
-          ping -c 3 docker
-
-      - name: Verify Docker
-        run: |
-          docker version
           docker info
 
       - name: Build Docker Image
         run: |
           echo -e "FROM ubuntu:latest\nRUN echo 'Hello from Docker!' > /hello.txt" > Dockerfile
-          docker build -t my-simple-image .
+          docker -H tcp://localhost:2375 build -t my-simple-image .
 
       - name: Run Docker Container and Check Output
         run: |
-          docker run --rm my-simple-image cat /hello.txt
+          docker -H tcp://localhost:2375 run --rm my-simple-image cat /hello.txt
 
       - name: List Docker Images
         run: |
-          docker images
+          docker -H tcp://localhost:2375 images
