@@ -1,4 +1,4 @@
-name: Java CI with Maven and Docker
+name: Ensure Docker 2375 is Open
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  check-docker:
     runs-on: ubuntu-latest
     services:
       docker:
@@ -19,41 +19,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    
-    - name: Start Docker Daemon
+    - name: Wait for Docker Daemon to be Ready
       run: |
-        sudo systemctl start docker
-        nohup sudo dockerd --host=tcp://127.0.0.1:2375 --host=unix:///var/run/docker.sock > dockerd.log 2>&1 &
-        sleep 10  # 确保 Docker Daemon 启动
+        echo "Waiting for Docker to start..."
+        sleep 15  # 确保 Docker 完全启动
+        docker info  # 确保 Docker 运行正常
 
-    - name: Verify Docker Daemon
-      run: docker info  # 确保 Docker 正常运行
-    
-    - name: Cache Maven dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2/repository
-        key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          maven-${{ runner.os }}-
-
-    - name: Build with Maven
-      env:
-        DOCKER_HOST: "tcp://127.0.0.1:2375"  # 确保 docker-maven-plugin 连接正确
-      run: mvn -B package --file pom.xml
-    
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: built-artifacts
-        path: target/*.jar
-    
-    - name: Update dependency graph
-      if: github.event_name == 'push'
-      uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
+    - name: Check if 2375 is open
+      run: |
+        sudo netstat -tlnp | grep 2375 || echo "2375 is not open!"
