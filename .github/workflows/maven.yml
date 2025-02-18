@@ -1,4 +1,4 @@
-name: Build Docker Image on GitHub Actions
+name: Build Maven Project and Docker Image on GitHub Actions
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build_container:
+  build_maven_and_docker:
     runs-on: ubuntu-latest
     services:
       docker:
@@ -20,21 +20,18 @@ jobs:
       - name: Install socat
         run: |
           sudo apt-get update
-          sudo apt-get install -y socat
+          sudo apt-get install -y socat maven
 
       - name: Forward TCP 2375 to Docker's Unix socket
         run: |
-          # 使用 socat 将 2375 端口转发到 Docker 本地 Unix socket
           socat TCP-LISTEN:2375,fork UNIX-CONNECT:/var/run/docker.sock &
-        
+
       - name: Set up Docker Host
         run: |
-          # 设置 Docker 主机环境变量为全局变量
           echo "DOCKER_HOST=tcp://localhost:2375" >> $GITHUB_ENV
 
       - name: Wait for Docker to start
         run: |
-          # 等待 Docker 启动并轮询直到 Docker 服务准备好
           for i in {1..30}; do
             if docker -H tcp://localhost:2375 info > /dev/null 2>&1; then
               echo "Docker is ready!"
@@ -45,7 +42,19 @@ jobs:
             fi
           done
 
-      - name: Build Docker Image
+      - name: Build Maven Project
         run: |
-          echo -e "FROM ubuntu:latest\nRUN echo 'Hello from Docker!' > /hello.txt" > Dockerfile
-          docker -H tcp://localhost:237
+          mvn clean install -DskipTests
+
+      - name: Build Docker Image from Dockerfile
+        run: |
+          echo -e "FROM openjdk:11-jre-slim\nCOPY target/*.jar app.jar\nENTRYPOINT [\"java\", \"-jar\", \"/app.jar\"]" > Dockerfile
+          docker -H tcp://localhost:2375 build -t my-maven-app .
+
+      - name: Run Docker Container and Check Output
+        run: |
+          docker -H tcp://localhost:2375 run --rm my-maven-app
+
+      - name: List Docker Images
+        run: |
+          docker -H tcp://localhost:2375 images
