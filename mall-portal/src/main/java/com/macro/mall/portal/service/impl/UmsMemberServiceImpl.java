@@ -69,7 +69,6 @@ public class UmsMemberServiceImpl implements UmsMemberService {
      * @return 是否符合安全要求
      */
     private boolean isValidPassword(String password) {
-        // 至少8位，包含大小写字母、数字、特殊字符
         String passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
         return Pattern.matches(passwordPattern, password);
     }

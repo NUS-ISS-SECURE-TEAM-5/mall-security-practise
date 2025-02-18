@@ -16,6 +16,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.macro.mall</groupId>
             <artifactId>mall-common</artifactId>
             <exclusions>
