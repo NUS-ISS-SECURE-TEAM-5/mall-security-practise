@@ -1,4 +1,4 @@
-name: Ensure Docker 2375 is Open
+name: Ensure Docker 2375 is Open and Build
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  check-docker:
+  build:
     runs-on: ubuntu-latest
     services:
       docker:
@@ -28,3 +28,8 @@ jobs:
     - name: Check if 2375 is open
       run: |
         sudo netstat -tlnp | grep 2375 || echo "2375 is not open!"
+
+    - name: Build with Maven
+      env:
+        DOCKER_HOST: "tcp://127.0.0.1:2375"
+      run: mvn -B package --file pom.xml
