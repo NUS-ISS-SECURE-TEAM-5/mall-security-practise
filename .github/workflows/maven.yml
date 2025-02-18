@@ -45,7 +45,6 @@ jobs:
       - name: Build Docker Image with Maven
         run: |
           mvn clean package -DskipTests
-          docker -H tcp://localhost:2375 build -t my-maven-app .
 
       - name: List Docker Images
         run: |
