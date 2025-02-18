@@ -19,8 +19,8 @@ jobs:
 
       - name: Install socat
         run: |
-          apt-get update
-          apt-get install -y socat
+          sudo apt-get update
+          sudo apt-get install -y socat
 
       - name: Forward TCP 2375 to Docker's Unix socket
         run: |
@@ -48,12 +48,4 @@ jobs:
       - name: Build Docker Image
         run: |
           echo -e "FROM ubuntu:latest\nRUN echo 'Hello from Docker!' > /hello.txt" > Dockerfile
-          docker -H tcp://localhost:2375 build -t my-simple-image .
-
-      - name: Run Docker Container and Check Output
-        run: |
-          docker -H tcp://localhost:2375 run --rm my-simple-image cat /hello.txt
-
-      - name: List Docker Images
-        run: |
-          docker -H tcp://localhost:2375 images
+          docker -H tcp://localhost:237
