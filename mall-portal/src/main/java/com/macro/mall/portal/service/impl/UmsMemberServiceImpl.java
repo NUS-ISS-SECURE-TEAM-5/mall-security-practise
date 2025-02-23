@@ -76,9 +76,9 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     @Override
     public void register(String username, String password, String telephone, String authCode) {
         //验证验证码
-        if(!verifyAuthCode(authCode,telephone)){
-            Asserts.fail("验证码错误");
-        }
+//        if(!verifyAuthCode(authCode,telephone)){
+//            Asserts.fail("验证码错误");
+//        }
 
         if (!isValidPassword(password)) {
             Asserts.fail("密码必须至少8位，包含大小写字母、数字和特殊字符");
