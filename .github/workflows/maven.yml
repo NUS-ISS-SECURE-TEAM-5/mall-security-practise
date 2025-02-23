@@ -1,0 +1,51 @@
+name: Build Docker Image with Maven on GitHub Actions
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_docker_image:
+    runs-on: ubuntu-latest
+    services:
+      docker:
+        image: docker:stable-dind
+        options: --privileged
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install socat and Maven
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y socat maven
+
+      - name: Forward TCP 2375 to Docker's Unix socket
+        run: |
+          socat TCP-LISTEN:2375,fork UNIX-CONNECT:/var/run/docker.sock &
+
+      - name: Set up Docker Host
+        run: |
+          echo "DOCKER_HOST=tcp://localhost:2375" >> $GITHUB_ENV
+
+      - name: Wait for Docker to start
+        run: |
+          for i in {1..30}; do
+            if docker -H tcp://localhost:2375 info > /dev/null 2>&1; then
+              echo "Docker is ready!"
+              break
+            else
+              echo "Waiting for Docker to start... Attempt $i"
+              sleep 5
+            fi
+          done
+
+      - name: Build Docker Image with Maven
+        run: |
+          mvn clean package -DskipTests
+
+      - name: List Docker Images
+        run: |
+          docker -H tcp://localhost:2375 images
