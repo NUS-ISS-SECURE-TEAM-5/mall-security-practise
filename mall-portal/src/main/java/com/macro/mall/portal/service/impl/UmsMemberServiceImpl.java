@@ -58,6 +58,16 @@ public class UmsMemberServiceImpl implements UmsMemberService {
     }
 
     @Override
+    public UmsMember getBySub(String sub) {
+        UmsMemberExample example = new UmsMemberExample();
+        example.createCriteria().andSubEqualTo(sub);
+        List<UmsMember> memberList = memberMapper.selectByExample(example);
+        if (!CollectionUtils.isEmpty(memberList)) {
+            return memberList.get(0);
+        }
+        return null;
+    }
+    @Override
     public UmsMember getById(Long id) {
         return memberMapper.selectByPrimaryKey(id);
     }
@@ -109,6 +119,35 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         memberMapper.insert(umsMember);
         umsMember.setPassword(null);
     }
+
+    @Override
+    public void oidc_register(String sub, String username) {
+        // 查询数据库是否已有该 sub 的用户
+        UmsMemberExample example = new UmsMemberExample();
+        example.createCriteria().andSubEqualTo(sub); // 使用 sub 作为唯一标识
+        List<UmsMember> umsMembers = memberMapper.selectByExample(example);
+        if (!CollectionUtils.isEmpty(umsMembers)) {
+            Asserts.fail("该用户已经存在");
+        }
+
+        // 没有该用户，进行添加操作
+        UmsMember umsMember = new UmsMember();
+        umsMember.setSub(sub); // 存储 sub
+        umsMember.setUsername(username);
+        umsMember.setCreateTime(new Date());
+        umsMember.setStatus(1);
+
+        // 获取默认会员等级并设置
+        UmsMemberLevelExample levelExample = new UmsMemberLevelExample();
+        levelExample.createCriteria().andDefaultStatusEqualTo(1);
+        List<UmsMemberLevel> memberLevelList = memberLevelMapper.selectByExample(levelExample);
+        if (!CollectionUtils.isEmpty(memberLevelList)) {
+            umsMember.setMemberLevelId(memberLevelList.get(0).getId());
+        }
+        // 插入数据库
+        memberMapper.insert(umsMember);
+    }
+
 
     @Override
     public String generateAuthCode(String telephone) {
@@ -172,6 +211,27 @@ public class UmsMemberServiceImpl implements UmsMemberService {
         }
         if (!BCrypt.checkpw(password, member.getPassword())) {
             Asserts.fail("密码不正确！");
+        }
+        if(member.getStatus()!=1){
+            Asserts.fail("该账号已被禁用！");
+        }
+        // 登录校验成功后，一行代码实现登录
+        StpMemberUtil.login(member.getId());
+        UserDto userDto = new UserDto();
+        userDto.setId(member.getId());
+        userDto.setUsername(member.getUsername());
+        userDto.setClientId(AuthConstant.PORTAL_CLIENT_ID);
+        // 将用户信息存储到Session中
+        StpMemberUtil.getSession().set(AuthConstant.STP_MEMBER_INFO,userDto);
+        // 获取当前登录用户Token信息
+        return StpMemberUtil.getTokenInfo();
+    }
+
+    @Override
+    public SaTokenInfo oidc_login(String username, String Sub) {
+        UmsMember member = getByUsername(username);
+        if(member==null){
+            Asserts.fail("找不到该用户！");
         }
         if(member.getStatus()!=1){
             Asserts.fail("该账号已被禁用！");

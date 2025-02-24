@@ -14,6 +14,8 @@ public interface UmsMemberService {
      */
     UmsMember getByUsername(String username);
 
+    UmsMember getBySub(String sub);
+
     /**
      * 根据会员编号获取会员
      */
@@ -24,6 +26,9 @@ public interface UmsMemberService {
      */
     @Transactional
     void register(String username, String password, String telephone, String authCode);
+
+
+    void oidc_register(String sub, String username);
 
     /**
      * 生成验证码
@@ -50,6 +55,8 @@ public interface UmsMemberService {
      * 登录后获取token
      */
     SaTokenInfo login(String username, String password);
+
+    SaTokenInfo oidc_login(String username, String Sub);
 
     /**
      * 登出功能

@@ -36,6 +36,9 @@ public class UmsMember implements Serializable {
     @Schema(title = "生日")
     private Date birthday;
 
+    @Schema(title = "Keycloak 用户唯一标识")
+    private String sub;
+
     @Schema(title = "所做城市")
     private String city;
 
@@ -96,6 +99,15 @@ public class UmsMember implements Serializable {
 
     public String getNickname() {
         return nickname;
+    }
+
+    // 2. 新增 Getter/Setter
+    public String getSub() {
+        return sub;
+    }
+
+    public void setSub(String sub) {
+        this.sub = sub;
     }
 
     public void setNickname(String nickname) {
@@ -221,6 +233,7 @@ public class UmsMember implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
+        sb.append(", sub=").append(sub);
         sb.append(", memberLevelId=").append(memberLevelId);
         sb.append(", username=").append(username);
         sb.append(", password=").append(password);

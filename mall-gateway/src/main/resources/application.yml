@@ -71,6 +71,7 @@ secure:
       - "/mall-admin/admin/login"
       - "/mall-admin/admin/register"
       - "/mall-admin/minio/upload"
+      - "/mall-portal/sso/oidc_login"
 management:
   endpoints:
     web:
