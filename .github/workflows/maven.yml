@@ -1,4 +1,4 @@
-name: Build Docker Image with Maven on GitHub Actions
+name: Build and Push Docker Images to GCP Artifact Registry
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build_docker_image:
+  build_docker_images:
     runs-on: ubuntu-latest
     services:
       docker:
@@ -42,10 +42,36 @@ jobs:
             fi
           done
 
-      - name: Build Docker Image with Maven
-        run: |
-          mvn clean package -DskipTests
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: List Docker Images
+      - name: Configure Docker for GCP Artifact Registry
+        run: gcloud auth configure-docker asia-southeast1-docker.pkg.dev
+
+      - name: Build Docker Images with Maven
         run: |
-          docker -H tcp://localhost:2375 images
+          mvn clean package -DskipTests  # Maven 自动构建 Docker 镜像
+
+      - name: List Docker Images (After Maven Build)
+        run: docker -H tcp://localhost:2375 images
+
+      - name: Retag and Push All Docker Images
+        run: |
+          # 获取所有 mall/ 前缀的 Docker 镜像
+          IMAGES=$(docker -H tcp://localhost:2375 images --format "{{.Repository}}:{{.Tag}}" | grep "^mall/")
+          
+          for IMAGE in $IMAGES; do
+            IMAGE_NAME=$(echo $IMAGE | cut -d':' -f1)  # 获取 mall/mall-admin 这样的名称
+            TAG=$(echo $IMAGE | cut -d':' -f2)  # 获取 tag，通常是 latest
+            
+            # 生成 GCP Artifact Registry 目标路径
+            GCP_IMAGE="asia-southeast1-docker.pkg.dev/mall-security/mall/$IMAGE_NAME:$TAG"
+            
+            echo "Retagging $IMAGE as $GCP_IMAGE ..."
+            docker -H tcp://localhost:2375 tag $IMAGE $GCP_IMAGE
+            
+            echo "Pushing $GCP_IMAGE ..."
+            docker -H tcp://localhost:2375 push $GCP_IMAGE
+          done
