@@ -154,7 +154,7 @@ public class UmsMemberController {
         }
         String tokenUrl = "http://localhost:8080/realms/my-realm/protocol/openid-connect/token";
         String clientId = "my-client";
-        String redirectUri = "http://127.0.0.1:8201/mall-portal/sso/oidc_login";
+        String redirectUri = "http://10.0.2.2:8201/mall-portal/sso/oidc_login";
 
         // 构造 x-www-form-urlencoded 请求体
         RequestBody requestBody = new FormBody.Builder()
