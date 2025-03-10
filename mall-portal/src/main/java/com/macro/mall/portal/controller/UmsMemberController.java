@@ -221,6 +221,41 @@ public class UmsMemberController {
         }
     }
 
+    @Operation(summary = "Google OIDC 登录")
+    @RequestMapping(value = "/google_oidc_login", method = RequestMethod.POST)
+    @ResponseBody
+    public CommonResult googleOidcLogin(@RequestParam String idToken) {
+        if (idToken == null || idToken.isEmpty()) {
+            return CommonResult.failed("ID Token 为空");
+        }
+
+        try {
+            String sub = getSubFromIdToken(idToken);
+            if (sub == null) {
+                return CommonResult.failed("ID Token 中未包含 sub 字段");
+            }
+
+            UmsMember umsMember = memberService.getBySub(sub);
+            if (umsMember == null) {
+                Map<String, Object> idTokenPayload = parseIdToken(idToken);
+                String username = (String) idTokenPayload.get("name");
+                memberService.oidc_register(sub, username);
+                umsMember = memberService.getBySub(sub);
+                //return CommonResult.success(Map.of("sub", sub, "username", username, "status", "注册成功"));
+            }
+
+            SaTokenInfo saTokenInfo = memberService.oidc_login(umsMember.getUsername(), sub);
+            return CommonResult.success(Map.of("token", saTokenInfo.getTokenValue(), "tokenHead", tokenHead + " "));
+
+        } catch (IOException e) {
+            return CommonResult.failed("解析 ID Token 时发生错误: " + e.getMessage());
+        } catch (Exception e) {
+            return CommonResult.failed("未知异常: " + e.getMessage());
+        }
+    }
+
+
+
 
 
     @Operation(summary = "获取会员信息")

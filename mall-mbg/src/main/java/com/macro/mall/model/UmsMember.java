@@ -63,6 +63,8 @@ public class UmsMember implements Serializable {
     @Schema(title = "历史积分数量")
     private Integer historyIntegration;
 
+    private String sub;
+
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
@@ -224,6 +226,14 @@ public class UmsMember implements Serializable {
 
     public void setHistoryIntegration(Integer historyIntegration) {
         this.historyIntegration = historyIntegration;
+    }
+
+    public String getSub() {
+        return sub;
+    }
+
+    public void setSub(String sub) {
+        this.sub = sub;
     }
 
     @Override
