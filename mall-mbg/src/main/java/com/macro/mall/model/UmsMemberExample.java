@@ -267,11 +267,6 @@ public class UmsMemberExample {
             return (Criteria) this;
         }
 
-        public Criteria andSubEqualTo(String value) {
-            addCriterion("sub =", value, "sub");
-            return (Criteria) this;
-        }
-
         public Criteria andUsernameNotEqualTo(String value) {
             addCriterion("username <>", value, "username");
             return (Criteria) this;
